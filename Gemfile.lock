@@ -1,0 +1,21 @@
+PATH
+  remote: .
+  specs:
+    zzap (0.1.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    rake (10.5.0)
+    rubygems-tasks (0.2.4)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  rake (~> 10.0)
+  rubygems-tasks (~> 0.2)
+  zzap!
+
+BUNDLED WITH
+   1.15.1

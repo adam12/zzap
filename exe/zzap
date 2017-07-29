@@ -1,0 +1,107 @@
+#!/usr/bin/env ruby
+
+require "pathname"
+require "open-uri"
+require "zlib"
+require "rubygems/package" # TarReader
+require "net/http"
+require "tempfile"
+
+module Zzap
+  class CLI
+    attr_accessor :target_name, :source
+
+    def initialize(target_name, source)
+      @target_name = target_name
+      @source = source
+    end
+
+    def run
+      abort("Target '#{target_name}' already exists! Aborting.") if File.exists?(target_name)
+
+      tarball = Tempfile.new("zzap")
+
+      fetch_source(tarball)
+      extract_tarball(tarball)
+      perform_rename
+      perform_sub
+
+    ensure
+      if tarball
+        tarball.close
+        tarball.unlink
+      end
+    end
+
+    def perform_rename
+      # Work from most specific first
+      candidates = Dir[target_name + "/**/*app_prototype*"]
+        .sort_by { |p| -p.split("/").size }
+
+      candidates.each do |path|
+        FileUtils.mv(path, path.sub("app_prototype", target_name))
+      end
+    end
+
+    def perform_sub
+      replacements = {
+        "app_prototype" => target_name,
+        "AppPrototype" => target_name.split(/[-_]/).map(&:capitalize).join
+      }
+
+      pattern = Regexp.union(*replacements.keys)
+
+      Dir[target_name + "/**/*"].each do |path|
+        next if File.directory?(path)
+
+        if File.foreach(path).grep(pattern).any?
+          File.write(path, File.read(path).gsub(pattern, replacements))
+        end
+      end
+    end
+
+    def fetch_source(tarball)
+      case source
+      when /\Ahttp/
+        warn "Fetching #{source}"
+        uri = URI.parse(source)
+        tarball.write(uri.read)
+      end
+    end
+
+    def extract_tarball(tarball)
+      File.open(tarball.path, "rb") do |file|
+        Zlib::GzipReader.wrap(file) do |gz|
+          Gem::Package::TarReader.new(gz) do |tar|
+            # Figure out leading root folder name
+            root = tar.find(&:file?).full_name.split(File::SEPARATOR).shift
+
+            tar.each do |entry|
+              if entry.file?
+                # Trim root folder name from full name
+                full_name = Pathname(target_name) + Pathname(entry.full_name).sub(root + "/", "")
+
+                FileUtils.mkdir_p(File.dirname(full_name))
+                File.open(full_name, "wb") do |f|
+                  f.write(entry.read)
+                end
+                File.chmod(entry.header.mode, full_name)
+              end
+            end
+          end
+        end
+      end
+    end
+
+    def self.run(argv)
+      target_name = ARGV[0] || abort("Missing target")
+      repo = ARGV[1] || abort("Missing repo")
+
+      source = "https://api.github.com/repos/#{repo}/tarball"
+
+      new(target_name, source).run
+    end
+  end
+end
+
+Zzap::CLI.run(ARGV)
