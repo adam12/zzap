@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
   spec.executables  = "zzap"
   spec.bindir       = "exe"
 
-  spec.add_dependency "rubyzip"
+  spec.add_dependency "rubyzip", "~> 1.2"
   spec.add_development_dependency "rubygems-tasks", "~> 0.2"
   spec.add_development_dependency "rake", "~> 10.0"
 end
