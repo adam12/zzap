@@ -87,12 +87,21 @@ module Zzap
     end
 
     def self.run(argv)
-      target_name = ARGV[0] || abort("Missing target")
-      repo = ARGV[1] || abort("Missing repo")
+      target_name = ARGV[0] || abort(usage)
+      repo = ARGV[1] || abort(usage)
 
       source = "https://api.github.com/repos/#{repo}/zipball"
 
       new(target_name, source).run
+    end
+
+    def self.usage
+      <<~EOM
+      Usage: zzap target_name user_name/repo_name
+
+            target_name             Snake cased folder name that will also be the application name
+            user_name/repo_name     Github user and repository
+      EOM
     end
   end
 end
