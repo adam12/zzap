@@ -58,13 +58,10 @@ module Zzap
     end
 
     def fetch_source(zipball)
-      case source
-      when /\Ahttp/
-        warn "Fetching #{source}"
-        uri = URI.parse(source)
-        zipball.write(uri.read)
-        zipball.rewind
-      end
+      warn "Fetching #{source}"
+      uri = URI.parse(source)
+      zipball.write(uri.read)
+      zipball.rewind
     end
 
     def extract_zipball(zipball)
