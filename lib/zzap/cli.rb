@@ -81,20 +81,34 @@ module Zzap
 
     def self.run(argv)
       target_name = ARGV[0] || abort(usage)
-      repo = ARGV[1] || abort(usage)
+      source = ARGV[1] || abort(usage)
 
-      source = "https://api.github.com/repos/#{repo}/zipball"
+      if github_pattern?(source)
+        source = "https://api.github.com/repos/#{source}/zipball"
+      end
 
       new(target_name, source).run
     end
 
     def self.usage
       <<~EOM
-      Usage: zzap target_name user_name/repo_name
+      Usage: zzap target_name source
 
             target_name             Snake cased folder name that will also be the application name
+            source                  Path to app prototype
+
+
+        Possible source formats:
             user_name/repo_name     Github user and repository
+            path                    Local path to folder containing project template
       EOM
+    end
+
+    def self.github_pattern?(source)
+      return false if source.start_with?("/")
+      return false if source.start_with?("http")
+
+      true
     end
   end
 end
