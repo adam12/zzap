@@ -1,5 +1,6 @@
 ## master
 - Move CLI class to own file
+- Accept local sources for zzaping
 
 ## 0.2.0 (2017-08-22)
 - Use zipball instead of tarball
