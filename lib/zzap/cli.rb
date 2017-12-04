@@ -68,8 +68,6 @@ module Zzap
     end
 
     def extract_zipball(zipball)
-      require "zip"
-
       Zip::File.open(zipball.path) do |zip_file|
         root = zip_file.find(&:file?).name.split(File::SEPARATOR).shift
 
