@@ -26,6 +26,7 @@ module Zzap
         copy_source
       end
 
+      warn "Zzaping!"
       perform_rename
       perform_sub
 
@@ -86,6 +87,7 @@ module Zzap
     end
 
     def copy_source
+      warn "Copying #{source} to #{target_name}"
       FileUtils.cp_r(source, target_name)
     end
 
