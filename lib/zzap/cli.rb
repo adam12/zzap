@@ -16,10 +16,16 @@ module Zzap
     def run
       abort("Target '#{target_name}' already exists! Aborting.") if File.exists?(target_name)
 
-      zipball = Tempfile.new("zzap")
+      case source
+      when /\Ahttp/
+        zipball = Tempfile.new("zzap")
 
-      fetch_source(zipball)
-      extract_zipball(zipball)
+        fetch_source(zipball)
+        extract_zipball(zipball)
+      when /\A\//
+        copy_source
+      end
+
       perform_rename
       perform_sub
 
@@ -77,6 +83,10 @@ module Zzap
           zip_file.extract(entry, full_name)
         end
       end
+    end
+
+    def copy_source
+      FileUtils.cp_r(source, target_name)
     end
 
     def self.run(argv)
