@@ -96,7 +96,9 @@ module Zzap
       source = ARGV[1] || abort(usage)
 
       if github_pattern?(source)
-        source = "https://api.github.com/repos/#{source}/zipball"
+        repo, release = source.split("#")
+        release = "master" if release.nil?
+        source = "https://github.com/#{repo}/archive/#{release}.zip"
       end
 
       new(target_name, source).run
